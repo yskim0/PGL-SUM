@@ -47,7 +47,7 @@ else:
     raise NotImplementedError("only implemented exp1, exp2, exp3")
 
 results = [f for f in listdir(path) if f.endswith(".json")]
-results.sort(key=lambda video: int(video[6:-5])) #! 이게 왜 [6:-5]?? 왜 10개를 뺴고 하는 거지. 처음 꺼는 성능 안좋아서 그렇다치지만 마지막은 왜? 
+results.sort(key=lambda video: int(video[6:-5]))
 dataset_path = f'{base_dir}/{data_file}.h5'
 # json_dataset_path = f'{base_dir}/{data_file}.json'
 # with open(json_dataset_path, 'r') as f:
