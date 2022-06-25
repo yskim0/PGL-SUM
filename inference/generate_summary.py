@@ -3,7 +3,7 @@ import numpy as np
 from knapsack_implementation import knapSack
 
 
-def generate_summary(all_shot_bound, all_scores, all_nframes, all_positions):
+def generate_summary(all_shot_bound, all_scores, all_nframes, all_positions, user_sumratio):
     """ Generate the automatic machine summary, based on the video shots; the frame importance scores; the number of
     frames in the original video and the position of the sub-sampled frames of the original video.
 
@@ -13,13 +13,14 @@ def generate_summary(all_shot_bound, all_scores, all_nframes, all_positions):
     :param list[np.ndarray] all_positions: The position of the sub-sampled frames for all the -original- testing videos.
     :return: A list containing the indices of the selected frames for all the -original- testing videos.
     """
-    all_summaries = []
+    user_summaries = []
     for video_index in range(len(all_scores)):
         # Get shots' boundaries
         shot_bound = all_shot_bound[video_index]  # [number_of_shots, 2]
         frame_init_scores = all_scores[video_index]
         n_frames = all_nframes[video_index]
         positions = all_positions[video_index]
+        sum_ratio = user_sumratio
 
         # Compute the importance scores for the initial frame sequence (not the sub-sampled one)
         frame_scores = np.zeros(n_frames, dtype=np.float32)
@@ -43,7 +44,8 @@ def generate_summary(all_shot_bound, all_scores, all_nframes, all_positions):
 
         # Select the best shots using the knapsack implementation
         final_shot = shot_bound[-1]
-        final_max_length = int((final_shot[1] + 1) * 0.15)
+        # final_max_length = int((final_shot[1] + 1) * 0.15)
+        final_max_length = int((final_shot[1] + 1) * sum_ratio)
 
         selected = knapSack(final_max_length, shot_lengths, shot_imp_scores, len(shot_lengths))
 
@@ -51,7 +53,6 @@ def generate_summary(all_shot_bound, all_scores, all_nframes, all_positions):
         summary = np.zeros(final_shot[1] + 1, dtype=np.int8)
         for shot in selected:
             summary[shot_bound[shot][0]:shot_bound[shot][1] + 1] = 1
+        user_summaries.append(summary)
 
-        all_summaries.append(summary)
-
-    return all_summaries
+    return user_summaries
