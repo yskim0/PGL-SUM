@@ -8,9 +8,11 @@ import sys
 # with args (example usage: python choose_best_epoch.py <path_to_experiment> TVSum)
 exp_path = sys.argv[1]
 dataset = sys.argv[2]
+data_file = sys.argv[3]
 ''' without args
-exp_path = "../PGL-SUM/Summaries/PGL-SUM/exp1"
-dataset = "SumMe"
+exp_path = "/data/project/rw/video_summarization/PGL-SUM/Summaries/PGL-SUM/exp1"
+dataset = "summe"
+data_file = "vip_summe_inorder_length_25_9000"
 '''
 
 
@@ -65,23 +67,18 @@ def train_logs(log_file):
         epoch = cand_epoch
     return epoch+1
 
+# results_file = "/data/project/rw/video_summarization/PGL-SUM/Summaries/PGL-SUM/exp1/summe/results/data_file/f_scores.txt"
+results_file = f'{exp_path}/{dataset}/results/{data_file}/f_scores.txt'
+log = f'{exp_path}/{dataset}/logs/{data_file}/scalars.csv'
 
-all_fscores = np.zeros(5, dtype=float)
-for split in range(0, 5):
-    results_file = exp_path + "/" + dataset + "/results/split" + str(split) + "/f_scores.txt"
-    log = exp_path + "/" + dataset + "/logs/split" + str(split) + "/scalars.csv"
-
-    # read F-Scores
-    with open(results_file) as f:
-        f_scores = f.read().strip()
-        if "\n" in f_scores:
-            f_scores = f_scores.splitlines()
-        else:
-            f_scores = json.loads(f_scores)
-        f_scores = [float(f_score) for f_score in f_scores]
-        selected_epoch = train_logs(log)
-        all_fscores[split] = np.round(f_scores[selected_epoch], 2)
-        print(f"Split: {split} -> Criterion Fscore: {all_fscores[split]} @ epoch: {selected_epoch}")
-
-avg_fscore = np.mean(all_fscores)
-print(f"Average Fscore: {avg_fscore}")
+# read F-Scores
+with open(results_file) as f:
+    f_scores = f.read().strip()
+    if "\n" in f_scores:
+        f_scores = f_scores.splitlines()
+    else:
+        f_scores = json.loads(f_scores)
+    f_scores = [float(f_score) for f_score in f_scores]
+    selected_epoch = train_logs(log)
+    best_fscore = np.round(f_scores[selected_epoch], 2)
+    print(f"Best Fscore: {best_fscore} @ epoch: {selected_epoch}")
