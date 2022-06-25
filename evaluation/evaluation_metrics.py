@@ -66,7 +66,7 @@ def coverage_count(vid, uid, predicted_summary, user_summary, video_boundary, su
         raw_data[f'v{i+1}_pred_frames'] = n_pred_s_frame # 해당 세그먼트 내에서 machine summary가 sumamry라고 예측한 프레임 개수
         raw_data[f'v{i+1}_gt_frames'] = n_gt_s_frame # 해당 세그먼트 내에서 gt summary가 sumamry라고 예측한 프레임 개수
         raw_data[f'v{i+1}_n_overlap'] = n_overlapped
-        raw_data[f'v{i+1}_overlap_ratio'] = n_overlapped / n_gt_s_frame
+        raw_data[f'v{i+1}_overlap_ratio'] = n_overlapped / (n_gt_s_frame + 1e+6) # to avoid divide by zero error
         raw_data[f'v{i+1}_pred_sum_ratio'] = n_pred_s_frame / len(s_seg)
         raw_data[f'v{i+1}_gt_sum_ratio'] = n_gt_s_frame / len(g_seg)
         
