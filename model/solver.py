@@ -10,7 +10,7 @@ import h5py
 from tqdm import tqdm, trange
 from layers.summarizer import PGL_SUM
 from utils import TensorboardWriter
-
+import math
 
 class Solver(object):
     def __init__(self, config=None, train_loader=None, test_loader=None):
@@ -28,6 +28,7 @@ class Solver(object):
             torch.cuda.manual_seed_all(self.config.seed)
             np.random.seed(self.config.seed)
             random.seed(self.config.seed)
+        
 
     def build(self):
         """ Function for constructing the PGL-SUM model of its key modules and parameters."""
@@ -38,6 +39,8 @@ class Solver(object):
                              heads=self.config.heads,
                              fusion=self.config.fusion,
                              pos_enc=self.config.pos_enc).to(self.config.device)
+        # self.model = nn.DataParallel(self.model).to(self.config.device)
+
         if self.config.init_type is not None:
             self.init_weights(self.model, init_type=self.config.init_type, init_gain=self.config.init_gain)
 
@@ -45,6 +48,7 @@ class Solver(object):
             # Optimizer initialization
             self.optimizer = optim.Adam(self.model.parameters(), lr=self.config.lr, weight_decay=self.config.l2_req)
             self.writer = TensorboardWriter(str(self.config.log_dir))
+            # Broadcast parameters from rank 0 to all other processes.
 
     @staticmethod
     def init_weights(net, init_type="xavier", init_gain=1.4142):
@@ -78,6 +82,7 @@ class Solver(object):
 
             loss_history = []
             num_batches = int(len(self.train_loader) / self.config.batch_size)  # full-batch or mini batch
+
             iterator = iter(self.train_loader)
             for _ in trange(num_batches, desc='Batch', ncols=80, leave=False):
                 # ---- Training ... ----#
@@ -131,7 +136,6 @@ class Solver(object):
         weights_save_path = self.config.score_dir.joinpath("weights.h5")
         out_scores_dict = {}
         for frame_features, video_name in tqdm(self.test_loader, desc='Evaluate', ncols=80, leave=False):
-            # [seq_len, input_size]
             frame_features = frame_features.view(-1, self.config.input_size).to(self.config.device)
 
             with torch.no_grad():

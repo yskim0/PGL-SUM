@@ -4,7 +4,6 @@ import torch
 from pathlib import Path
 import pprint
 
-save_dir = Path('../PGL-SUM/Summaries/PGL-SUM/exp1')
 
 
 def str2bool(v):
@@ -26,6 +25,8 @@ class Config(object):
         """Configuration Class: set kwargs as class attributes with setattr"""
         self.log_dir, self.score_dir, self.save_dir = None, None, None
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -36,9 +37,10 @@ class Config(object):
 
         :param str video_type: The Dataset being used, SumMe or TVSum.
         """
-        self.log_dir = save_dir.joinpath(video_type, 'logs/split' + str(self.split_index))
-        self.score_dir = save_dir.joinpath(video_type, 'results/split' + str(self.split_index))
-        self.save_dir = save_dir.joinpath(video_type, 'models/split' + str(self.split_index))
+        save_dir = Path(f'../PGL-SUM/Summaries/PGL-SUM/{self.expr}')
+        self.score_dir = save_dir.joinpath(video_type, 'results/' + str(self.data_file))
+        self.log_dir = save_dir.joinpath(video_type, 'logs/' + str(self.data_file))
+        self.save_dir = save_dir.joinpath(video_type, 'models/' + str(self.data_file))
 
     def __repr__(self):
         """Pretty-print configurations in alphabetical order"""
@@ -58,7 +60,11 @@ def get_config(parse=True, **optional_kwargs):
     # Mode
     parser.add_argument('--mode', type=str, default='train', help='Mode for the configuration [train | test]')
     parser.add_argument('--verbose', type=str2bool, default='false', help='Print or not training messages')
-    parser.add_argument('--video_type', type=str, default='SumMe', help='Dataset to be used')
+    parser.add_argument('--video_type', type=str, default='summe', choices=['summe', 'tvsum'], help='Dataset to be used')
+    
+    # About Experiments (YS)
+    parser.add_argument('--data_file', type=str, default='vip_summe_inorder_length_25_9000', help='Dataset(.h5 file)')
+    parser.add_argument('--expr', type=str, default='exp1', choices=['exp1','exp2','exp3'], help='Experiments type (exp1:order, exp2:concat ratio & type, exp3:video len.')
 
     # Model
     parser.add_argument('--input_size', type=int, default=1024, help='Feature size expected in the input')
@@ -70,11 +76,11 @@ def get_config(parse=True, **optional_kwargs):
 
     # Train
     parser.add_argument('--n_epochs', type=int, default=200, help='Number of training epochs')
-    parser.add_argument('--batch_size', type=int, default=20, help='Size of each batch in training')
+    parser.add_argument('--batch_size', type=int, default=10, help='Size of each batch in training')
     parser.add_argument('--clip', type=float, default=5.0, help='Max norm of the gradients')
     parser.add_argument('--lr', type=float, default=5e-5, help='Learning rate used for the modules')
     parser.add_argument('--l2_req', type=float, default=1e-5, help='Regularization factor')
-    parser.add_argument('--split_index', type=int, default=0, help='Data split to be used [0-4]')
+    # parser.add_argument('--split_index', type=int, default=0, help='Data split to be used [0-4]')
     parser.add_argument('--init_type', type=str, default="xavier", help='Weight initialization method')
     parser.add_argument('--init_gain', type=float, default=None, help='Scaling factor for the initialization methods')
 

@@ -2,7 +2,8 @@
 from configs import get_config
 from solver import Solver
 from data_loader import get_loader
-
+import torch
+import horovod.torch as hvd
 
 if __name__ == '__main__':
     """ Main function that sets the data loaders; trains and evaluates the model."""
@@ -11,9 +12,8 @@ if __name__ == '__main__':
 
     print(config)
     print(test_config)
-    print('Currently selected split_index:', config.split_index)
-    train_loader = get_loader(config.mode, config.video_type, config.split_index)
-    test_loader = get_loader(test_config.mode, test_config.video_type, test_config.split_index)
+    train_loader = get_loader(config.mode, config.video_type, config.expr, config.data_file)
+    test_loader = get_loader(test_config.mode, test_config.video_type, test_config.expr, test_config.data_file)
     solver = Solver(config, train_loader, test_loader)
 
     solver.build()
