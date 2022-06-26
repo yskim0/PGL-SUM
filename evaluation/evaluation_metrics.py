@@ -47,14 +47,14 @@ def coverage_count(vid, uid, predicted_summary, user_summary, video_boundary, su
 
     # for dataframe
     raw_data = {}
-    raw_data['vid'] = vid
-    raw_data['uid'] = int(uid)
+    raw_data['video_id'] = vid
+    raw_data['user_id'] = int(uid)
     raw_data['sum_ratio'] = sum_ratio
 
     for i, g_seg in enumerate(G_split):
         s_seg = S_split[i]
-        print(f'len(s_seg) : {len(s_seg)}')
-        print(f'len(g_seg) : {len(g_seg)}')
+        # print(f'len(s_seg) : {len(s_seg)}')
+        # print(f'len(g_seg) : {len(g_seg)}')
 
         n_pred_s_frame = np.count_nonzero(s_seg) # number of summary frames of predicted summary
         n_gt_s_frame = np.count_nonzero(g_seg)
@@ -66,7 +66,7 @@ def coverage_count(vid, uid, predicted_summary, user_summary, video_boundary, su
         raw_data[f'v{i+1}_pred_frames'] = n_pred_s_frame # 해당 세그먼트 내에서 machine summary가 sumamry라고 예측한 프레임 개수
         raw_data[f'v{i+1}_gt_frames'] = n_gt_s_frame # 해당 세그먼트 내에서 gt summary가 sumamry라고 예측한 프레임 개수
         raw_data[f'v{i+1}_n_overlap'] = n_overlapped
-        raw_data[f'v{i+1}_overlap_ratio'] = n_overlapped / (n_gt_s_frame + 1e+6) # to avoid divide by zero error
+        raw_data[f'v{i+1}_overlap_ratio'] = n_overlapped / (n_gt_s_frame + 1e-6) # to avoid divide by zero error
         raw_data[f'v{i+1}_pred_sum_ratio'] = n_pred_s_frame / len(s_seg)
         raw_data[f'v{i+1}_gt_sum_ratio'] = n_gt_s_frame / len(g_seg)
         

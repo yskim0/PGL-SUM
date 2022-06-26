@@ -81,4 +81,4 @@ with open(results_file) as f:
     f_scores = [float(f_score) for f_score in f_scores]
     selected_epoch = train_logs(log)
     best_fscore = np.round(f_scores[selected_epoch], 2)
-    print(f"Best Fscore: {best_fscore} @ epoch: {selected_epoch}")
+    print(f"The lowest loss model's Fscore: {best_fscore} @ epoch: {selected_epoch}")

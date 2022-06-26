@@ -83,7 +83,6 @@ for epoch in results:                       # for each epoch ...
             sum_ratio = np.array(hdf.get('video_' + video_index + '/sum_ratio')) # (n_users, )
             # length_ratio = json_data_file[video_name]['length_ratio']
         
-            
             all_video_name.append(video_name)
             all_user_summary.append(user_summary)
             all_shot_bound.append(sb)
@@ -106,20 +105,22 @@ for epoch in results:                       # for each epoch ...
         #! new parts... 
         f_scores = []
         for user_id in range(user_summary.shape[0]):
-                f_score = evaluate_summary(summary[user_id], user_summary[user_id])
+            f_score = evaluate_summary(summary[user_id], user_summary[user_id])
+            f_scores.append(f_score)
+            if epoch == results[-1]:
                 coverage = coverage_count(video_name, user_id, summary[user_id], user_summary[user_id], video_boundary, sum_ratio[user_id])
                 df = df.append(coverage, ignore_index=True)
-                f_scores.append(f_score)
         if eval_method == 'max':
             all_f_scores.append(max(f_scores))
         else:
             all_f_scores.append(sum(f_scores)/len(f_scores))
+    
     f_score_epochs.append(np.mean(all_f_scores))
     print("f_score: ", np.mean(all_f_scores))
 
-df = df[['video_id', 'user_id', 'sum_ratio', 'v1_frames', 'v1_pred_frames', 'v1_gt_frames', 'v1_n_overlap', 'v1_overlap_ratio', 'v1_pred_sum_ratio', 'v1_gt_sum_ratio', 
-'v2_frames', 'v2_pred_frames', 'v2_gt_frames', 'v2_n_overlap', 'v2_overlap_ratio', 'v2_pred_sum_ratio', 'v2_gt_sum_ratio', 
-'v3_frames', 'v3_pred_frames', 'v3_gt_frames', 'v3_n_overlap', 'v3_overlap_ratio', 'v3_pred_sum_ratio', 'v3_gt_sum_ratio', 
+df = df[['video_id', 'user_id', 'sum_ratio', 'v1_frames', 'v1_pred_frames', 'v1_gt_frames', 'v1_n_overlap', 'v1_overlap_ratio', 'v1_pred_sum_ratio', 'v1_gt_sum_ratio',\
+'v2_frames', 'v2_pred_frames', 'v2_gt_frames', 'v2_n_overlap', 'v2_overlap_ratio', 'v2_pred_sum_ratio', 'v2_gt_sum_ratio',\
+'v3_frames', 'v3_pred_frames', 'v3_gt_frames', 'v3_n_overlap', 'v3_overlap_ratio', 'v3_pred_sum_ratio', 'v3_gt_sum_ratio',\
 'v4_frames', 'v4_pred_frames', 'v4_gt_frames', 'v4_n_overlap', 'v4_overlap_ratio', 'v4_pred_sum_ratio', 'v4_gt_sum_ratio']]
 
 df.to_csv(f"{path}/last_epoch_results.csv", index=False)
