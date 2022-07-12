@@ -49,20 +49,10 @@ class VideoData(Dataset):
         
         self.filename = base_dir + h5file_name + str('.h5')
         print(f'loading dataset h5 file... : {self.filename}')
-        hdf = h5py.File(self.filename, 'r')
-        self.list_frame_features, self.list_gtscores = [], []
+        self.video_data = h5py.File(self.filename, 'r')
 
         with open(self.splits_filename) as f:
             self.data = json.loads(f.read())
-
-        for video_name in self.data[self.mode + '_keys']:
-            frame_features = torch.Tensor(np.array(hdf[video_name + '/features']))
-            gtscore = torch.Tensor(np.array(hdf[video_name + '/gtscore']))
-
-            self.list_frame_features.append(frame_features)
-            self.list_gtscores.append(gtscore)
-
-        hdf.close()
 
     def __len__(self):
         """ Function to be called for the `len` operator of `VideoData` Dataset. """
@@ -77,13 +67,23 @@ class VideoData(Dataset):
         :param int index: The above-mentioned id of the data.
         """
         video_name = self.data[self.mode + '_keys'][index]
-        frame_features = self.list_frame_features[index]
-        gtscore = self.list_gtscores[index]
+        d = {}
+        d['video_name'] = video_name
+        d['frame_features'] = torch.Tensor(np.array(self.video_data[video_name + '/features']))
+        d['gtscore'] = torch.Tensor(np.array(self.video_data[video_name + '/gtscore']))
+        d['change_points'] = np.array(self.video_data[video_name + '/change_points'])
+        d['n_frames'] = np.array(self.video_data[video_name + '/n_frames'])
+        d['n_frame_per_seg'] = np.array(self.video_data[video_name + '/n_frame_per_seg'])
+        d['picks'] = np.array(self.video_data[video_name + '/picks'])
+        d['user_summary'] = np.array(self.video_data[video_name + '/user_summary'])
+        d['sum_ratio'] = np.array(self.video_data[video_name + '/sum_ratio'])
+        d['video_boundary'] = np.array(self.video_data[video_name + '/video_boundary'])
 
-        if self.mode == 'test':
-            return frame_features, video_name
-        else:
-            return frame_features, gtscore
+        # if self.mode == 'test':
+        #     return frame_features, video_name
+        # else:
+        #     return frame_features, gtscore
+        return d
 
 
 def get_loader(mode, video_type, expr_name, data_file, set_id=None):
@@ -97,53 +97,27 @@ def get_loader(mode, video_type, expr_name, data_file, set_id=None):
     """
     if mode.lower() == 'train':
         vd = VideoData(mode, video_type, expr_name, data_file, set_id)
-        return DataLoader(vd, shuffle=True, collate_fn=partial(my_collate, mode=mode))
-        # train_sampler = torch.utils.data.distributed.DistributedSampler(
-        #     vd,
-        #     num_replicas=hvd.size(),
-        #     rank=hvd.rank())
-        # train_loader = torch.utils.data.DataLoader(
-        #     vd,
-        #     batch_size=128,
-        #     num_workers=8,
-        #     sampler=train_sampler)
-        # return train_loader
+        # return DataLoader(vd, shuffle=True, collate_fn=partial(my_collate, mode=mode))
+        return DataLoader(vd, shuffle=True)
+    
     else:
         vd = VideoData(mode, video_type, expr_name, data_file, set_id)
-        return DataLoader(vd, shuffle=True, collate_fn=partial(my_collate, mode=mode))
-        # vd = VideoData(mode, video_type, expr_name, data_file)
-        # test_sampler = torch.utils.data.distributed.DistributedSampler(
-        #     vd,
-        #     num_replicas=hvd.size(),
-        #     rank=hvd.rank())
-        # test_loader = torch.utils.data.DataLoader(
-        #     vd,
-        #     batch_size=128,
-        #     num_workers=8,
-        #     sampler=test_sampler)
-        # return DataLoader(vd, batch_size=1, shuffle=True, collate_fn=partial(my_collate, mode=mode))
-        # return test_loader
+        # return DataLoader(vd, shuffle=True, collate_fn=partial(my_collate, mode=mode))
+        return vd
 
+# def my_collate(batch, mode):
+#     if mode == 'test':
+#         for frame_features, video_name in batch:
+#             features = frame_features.numpy()
+#             videos = video_name
+#         return torch.Tensor(features), videos
 
-def my_collate(batch, mode):
-    if mode == 'test':
-        # batch = frame_features, video_name
-        for frame_features, video_name in batch:
-            features = frame_features.numpy()
-            videos = video_name
-        # features, videos = [], []
-        # for frame_features, video_name in batch:
-        #     features.append(frame_features.numpy())
-        #     videos.append(video_name)
-        return torch.Tensor(features), videos
-
-    elif mode == 'train':
-        # batch = frame_features, gtscore
-        features, gtscores = [], []
-        for frame_features, gtscore in batch:
-            features.append(frame_features.numpy())
-            gtscores.append(gtscore.numpy())
-        return torch.Tensor(features), torch.Tensor(gtscores)
+#     elif mode == 'train':
+#         features, gtscores = [], []
+#         for frame_features, gtscore in batch:
+#             features.append(frame_features.numpy())
+#             gtscores.append(gtscore.numpy())
+#         return torch.Tensor(features), torch.Tensor(gtscores)
 
 if __name__ == '__main__':
     pass
