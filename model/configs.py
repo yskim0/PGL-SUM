@@ -37,7 +37,10 @@ class Config(object):
 
         :param str video_type: The Dataset being used, SumMe or TVSum.
         """
-        save_dir = Path(f'../PGL-SUM/Summaries/PGL-SUM/{self.expr}')
+        if self.set_id is None:
+            save_dir = Path(f'../PGL-SUM/Summaries/PGL-SUM/{self.expr}')
+        else:
+            save_dir = Path(f'../PGL-SUM/Summaries/PGL-SUM/{self.expr}_try{self.set_id}')
         self.score_dir = save_dir.joinpath(video_type, 'results/' + str(self.data_file))
         self.log_dir = save_dir.joinpath(video_type, 'logs/' + str(self.data_file))
         self.save_dir = save_dir.joinpath(video_type, 'models/' + str(self.data_file))
@@ -64,7 +67,8 @@ def get_config(parse=True, **optional_kwargs):
     
     # About Experiments (YS)
     parser.add_argument('--data_file', type=str, default='vip_summe_inorder_length_25_9000', help='Dataset(.h5 file)')
-    parser.add_argument('--expr', type=str, default='exp1', choices=['exp1','exp2','exp3'], help='Experiments type (exp1:order, exp2:concat ratio & type, exp3:video len.')
+    parser.add_argument('--expr', type=str, default='exp1', choices=['exp1','exp2','exp3', 'exp4', 'exp5', 'exp6', 'exp7'], help='Experiments type (exp1:order, exp2:concat ratio & type, exp3:video len.')
+    parser.add_argument('--set_id', type=str, default=None)
 
     # Model
     parser.add_argument('--input_size', type=int, default=1024, help='Feature size expected in the input')

@@ -14,10 +14,12 @@ def generate_summary(all_shot_bound, all_scores, all_nframes, all_positions, all
     :return: A list containing the indices of the selected frames for all the -original- testing videos.
     """
     # user_summaries = []
-    user_summaries = np.zeros((len(all_scores), len(all_sum_ratio[0])), dtype=object) #!유저 수 all_sum_ratio.shape[1]이 맞나?
+    # user_summaries = np.zeros((len(all_scores), len(all_sum_ratio[0])), dtype=object) #!유저 수 all_sum_ratio.shape[1]이 맞나?
+    user_summaries = []
     # print(f'user_summaries.shape : {user_summaries.shape}, hopefully (n_videos,n_users,)')
 
     for video_index in range(len(all_scores)):
+        user_summary_per_video = []
         # Get shots' boundaries
         shot_bound = all_shot_bound[video_index]  # [number_of_shots, 2]
         frame_init_scores = all_scores[video_index]
@@ -58,6 +60,8 @@ def generate_summary(all_shot_bound, all_scores, all_nframes, all_positions, all
             for shot in selected:
                 summary[shot_bound[shot][0]:shot_bound[shot][1] + 1] = 1
             # user_summaries.append(summary)
-            user_summaries[video_index][n_user] = summary
+            user_summary_per_video.append(summary)
+            # user_summaries[video_index][n_user] = summary
+        user_summaries.append(user_summary_per_video)
 
     return user_summaries

@@ -78,6 +78,8 @@ class Solver(object):
     def train(self):
         """ Main function to train the PGL-SUM model. """
         best_loss = 1e+6 # to save best model
+        max_fscore = 0
+        max_fscore_epoch = 0
 
         for epoch_i in trange(self.config.n_epochs, desc='Epoch', ncols=80):
             self.model.train()
@@ -126,15 +128,15 @@ class Solver(object):
             # Save model having best(lowest) loss
             if best_loss > loss:
                 best_loss = loss
-                print(f'best(lowest) loss @ epoch_i : {epoch_i}')
+                # print(f'best(lowest) loss @ epoch_i : {epoch_i}')
                 ckpt_path = str(self.config.save_dir) + f'/best_loss_model.pkl'
-                tqdm.write(f'Save parameters at {ckpt_path}')
+                # tqdm.write(f'Save parameters at {ckpt_path}')
                 torch.save(self.model.state_dict(), ckpt_path)
-            
+
             # Save model @ every 10 epochs    
             if (epoch_i+1)%10 == 0:
                 ckpt_path = str(self.config.save_dir) + f'/epoch_{epoch_i}.pkl'
-                tqdm.write(f'Save parameters at {ckpt_path}')
+                # tqdm.write(f'Save parameters at {ckpt_path}')
                 torch.save(self.model.state_dict(), ckpt_path)
 
             self.evaluate(epoch_i)

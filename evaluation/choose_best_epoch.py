@@ -78,7 +78,12 @@ with open(results_file) as f:
         f_scores = f_scores.splitlines()
     else:
         f_scores = json.loads(f_scores)
-    f_scores = [float(f_score) for f_score in f_scores]
-    selected_epoch = train_logs(log)
-    best_fscore = np.round(f_scores[selected_epoch], 2)
-    print(f"The lowest loss model's Fscore: {best_fscore} @ epoch: {selected_epoch}")
+    f_scores = np.array([float(f_score) for f_score in f_scores])
+    best_loss_epoch = train_logs(log)
+    best_loss_fscore = np.round(f_scores[best_loss_epoch], 2)
+
+    best_score_epoch = np.argmax(f_scores)
+    best_fscore = np.round(f_scores[best_score_epoch], 2)
+
+    print(f"[{data_file}]\tThe lowest loss model's Fscore: {best_loss_fscore} @ epoch: {best_loss_epoch}")
+    print(f"[{data_file}]\tThe best f-score model's Fscore: {best_fscore} @ epoch: {best_score_epoch}")
